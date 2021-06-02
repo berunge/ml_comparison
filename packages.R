@@ -18,14 +18,11 @@ library(magrittr)
 library(pROC)
 library(Matrix)
 library(xgboost)
-library(ranger)
 library(predomics)
 library(gt)
 library(gtsummary)
-#phylogenetic tree tools
-library(ape)
-library(phytools)
-library(vegan)
+#phylogenetics tools
+library(phyloseq)
 
 conflict_prefer("filter",    "dplyr")
 conflict_prefer("select",    "dplyr")

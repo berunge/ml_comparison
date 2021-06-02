@@ -7,14 +7,6 @@
 ##' @param outcome string representation of outcome variable name
 ##' @return list with model, test predictions, and test data
 
-rf_fit <- function(data, outcome){
-
-  model_lists <- map2(labels(outcome), outcome, ~ fit_rf_model(data, .x, .y))
-
-  return(model_lists)
-
-}
-
 fit_rf_model <- function (data, outcome, class_label){
 
   set.seed(8675309)

@@ -36,7 +36,24 @@ list(
   tar_target(rf_output, fit_rf_model(conv_data, outcome = class_description[["outcome"]], class_label = class_description[["levels"]]), pattern = map(class_description)),
   tar_target(predomics_output, fit_predomics_model(pred_data, outcome = class_description[["outcome"]], class_label = class_description[["levels"]]), pattern = map(class_description)),
 
+  #cross Validation code
+
+  #import biom data again, this time do a cross validation split
+  tar_target(crossval_folds, load_data_cv(file_path_meta = "data/source/ag.txt",
+                                          file_path_biom = "data/source/AG.biom",
+                                          site_variable = "BODY_SITE",
+                                          site_name = "UBERON:feces",
+                                          folds = 10)),
+
+  tar_target(conv_data_cv, conventional_format(data = crossval_folds[[1]]), pattern = map(crossval_folds), iteration = "list"),
+  tar_target(pred_data_cv, predomics_format(data = crossval_folds[[1]]), pattern = map(crossval_folds), iteration = "list"),
+
+  tar_target(boost_output_cv, fit_boost_model(pred_data_cv, outcome = class_description[["outcome"]], class_label = class_description[["levels"]]), pattern = cross(class_description, pred_data_cv)),
+  tar_target(rf_output_cv, fit_rf_model(conv_data_cv, outcome = class_description[["outcome"]], class_label = class_description[["levels"]]), pattern = cross(class_description, conv_data_cv)),
+  tar_target(predomics_output_cv, fit_predomics_model(pred_data_cv, outcome = class_description[["outcome"]], class_label = class_description[["levels"]]), pattern = cross(class_description, pred_data_cv)),
+
   #print out table of AUCs
 
-  tar_target(auc_table_out, auc_table(rf_output, boost_output, predomics_output))
+  tar_target(auc_table_out, auc_table(rf_output, boost_output, predomics_output,
+                                      rf_output_cv, boost_output_cv, predomics_output_cv))
 )

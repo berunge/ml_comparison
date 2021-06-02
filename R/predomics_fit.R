@@ -3,22 +3,6 @@
 ##' .. content for \details{} ..
 ##'
 ##' @title
-##' @param data matrix formatted data
-##' @param outcome string representation of outcome variable name
-##' @return list of lists with model, test predictions, and test data
-
-predomics_fit <- function(data, outcomes){
-
-  model_lists <- map2(labels(outcomes), outcomes, ~ fit_predomics_model(data, .x, .y))
-
-  return(model_lists)
-}
-
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
-##'
-##' @title
 ##' @param data sparse matrix formatted data
 ##' @param outcome string representation of outcome variable name
 ##' @return list with model, test predictions, and test data
@@ -28,7 +12,7 @@ fit_predomics_model <- function(data, outcome, class_label){
   set.seed(8675309)
 
   # build terga2 classifier
-  classifier <- terga2(nCores = 1, seed = 1, plot = TRUE)
+  classifier <- terga2(nCores = 4, seed = 1, plot = TRUE)
   # rewrite description so the outputted file name is valid
   classifier$experiment$description <- outcome
 
