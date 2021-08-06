@@ -11,7 +11,9 @@
 
 auc_print <- function(output_structure){
 
-  roc_object <- roc(response = output_structure[["Response"]], predictor = output_structure[["Predictor"]] , auc = TRUE, plot = TRUE)
+  roc_object <- roc(response = output_structure[["Response"]],
+                    predictor = output_structure[["Predictor"]],
+                    auc = TRUE, plot = TRUE, direction = "<")
 
   print(roc_object)
 

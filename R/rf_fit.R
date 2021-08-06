@@ -7,43 +7,41 @@
 ##' @param outcome string representation of outcome variable name
 ##' @return list with model, test predictions, and test data
 
-fit_rf_model <- function (data, outcome, class_label){
+fit_rf_model <- function (data){
 
   set.seed(8675309)
 
-  variances <- select(data[[1]], starts_with("x")) %>%
-    map_dbl(var) %>%
-    enframe() %>%
-    arrange(desc(value)) %>%
-    slice(1:7000)
+  model_data <- data[[1]][[1]] %>%
+                t() %>%
+                as_tibble() %>%
+                clean_names(case = "snake") %>%
+                bind_cols(as_tibble_col(data[[3]][[1]], column_name = "outcome"))
 
-  ranger_data <- data[[1]] %>%
-    select(all_of(c(outcome, variances$name))) %>%
-    #change this to not throw out the unknown values
-    mutate(across(outcome, ~ if_else(.x == class_label, TRUE, FALSE))) %>%
-    drop_na(outcome)
-
-  ranger_data[[outcome]] %<>% factor()
-
-  model_formula <- as.formula(glue("{outcome} ~ ."))
-
-  rf_model <- ranger(formula = model_formula,
-                     data = ranger_data,
+  rf_model <- ranger(formula = outcome ~ .,
+                     data = model_data,
                      num.trees = 100,
                      probability = TRUE,
                      save.memory = TRUE)
 
-  rf_prediction <- predict(rf_model, data = data[[2]])
+  test_data <- data[[2]][[1]] %>%
+               t() %>%
+               as_tibble() %>%
+               clean_names(case = "snake") %>%
+               bind_cols(as_tibble_col(data[[4]][[1]], column_name = "outcome"))
+
+  rf_prediction <- predict(rf_model, data = test_data)
+
+  rf_calibration <- val.prob(p =  rf_prediction[["predictions"]][,2], y = test_data[["outcome"]], group = TRUE)
 
   rf_auc <- auc_print(list("Model" = rf_model,
                            "Predictor" =  rf_prediction[["predictions"]][,2],
                            "Test_Data" = NA,
-                           "Response" = data[[2]][outcome] == class_label
+                           "Response" = data[[4]][[1]]
                           )
                       )
 
-  rf_df <- tribble(~Outcome, ~Model, ~AUC,
-                      outcome, "Random Forest", rf_auc[1])
+  rf_df <- tribble(~Outcome, ~Model, ~AUC, ~Calibration,
+                      data[[5]], "Random Forest", rf_auc[1], rf_calibration)
 
   return(rf_df)
 }

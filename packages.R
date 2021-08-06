@@ -19,8 +19,12 @@ library(pROC)
 library(Matrix)
 library(xgboost)
 library(predomics)
+library(BhGLM)
+library(glmnet)
+library(caret)
 library(gt)
 library(gtsummary)
+library(rms)
 #phylogenetics tools
 library(phyloseq)
 

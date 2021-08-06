@@ -10,20 +10,18 @@
 ##'
 ##'
 
-auc_table <- function(rf_auc, boost_auc, predomics_auc,
-                      rf_auc_cv, boost_auc_cv, predomics_auc_cv){
+auc_table <- function(naive_auc_cv, bhglm_auc_cv, rf_auc_cv, boost_auc_cv, predomics_auc_cv){
 
-
-  df_comparison <- bind_rows(rf_auc, boost_auc, predomics_auc)
-
-  cv_summary <- bind_rows(rf_auc_cv, boost_auc_cv, predomics_auc_cv) %>%
+  cv_summary <- bind_rows(naive_auc_cv, bhglm_auc_cv, rf_auc_cv, boost_auc_cv, predomics_auc_cv) %>%
                 group_by(Outcome, Model) %>%
                 summarize(Mean_AUC = mean(AUC))
 
-  auc_tableready <- df_comparison %>%
-                    right_join(cv_summary, by = c("Outcome", "Model"))
+  auc_tableready <- cv_summary
 
   auc_comparison_table <- gt(data = auc_tableready, groupname_col = "Outcome", rowname_col = "Model")
-
-  return(auc_comparison_table)
+  
+  cv_calibration_plots <- bind_rows(naive_auc_cv, bhglm_auc_cv, rf_auc_cv, boost_auc_cv, predomics_auc_cv) %>% 
+                          select(Outcome, Model, Calibration)
+                          
+  return(list(auc_comparison_table, cv_calibration_plots))
 }
